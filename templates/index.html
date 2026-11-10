@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab 02: BJT DC Bias Web App</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <svg class="chip" viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><rect x="12" y="12" width="40" height="40" rx="5"/><path d="M20 3v9M28 3v9M36 3v9M44 3v9M20 52v9M28 52v9M36 52v9M44 52v9M3 20h9M3 28h9M3 36h9M3 44h9M52 20h9M52 28h9M52 36h9M52 44h9"/><circle cx="23" cy="23" r="3"/><circle cx="41" cy="41" r="3"/></g></svg>
+  <div class="brand"><h1>Lab 02: BJT DC Bias Web App</h1><p>ENG29 2121 – Common Emitter (Voltage Divider Bias)</p></div>
+  <div class="course"><span>‹/›</span> Computer Programming for<br> Electrical Engineers</div>
+</header>
+<main>
+  <div class="dashboard">
+    <section class="card inputs-card">
+      <h2><svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M13 3h6l1 3 3 1 3-1 3 5-2 2v4l2 2-3 5-3-1-3 1-1 3h-6l-1-3-3-1-3 1-3-5 2-2v-4l-2-2 3-5 3 1 3-1z"/><circle cx="16" cy="15" r="4"/></svg> Input Parameters</h2>
+      <form method="post" id="bias-form" novalidate>
+        {% for key, symbol, sub, description, unit in [('vcc','V','CC','Supply Voltage','V'), ('r1','R','1','Upper Divider','kΩ'), ('r2','R','2','Lower Divider','kΩ'), ('rc','R','C','Collector Resistor','kΩ'), ('re','R','E','Emitter Resistor','kΩ'), ('beta','β','','Current Gain','–'), ('vbe','V','BE','Base–Emitter Voltage','V')] %}
+        <div class="input-row"><label for="{{ key }}"><i>{{ symbol }}{% if sub %}<sub>{{ sub }}</sub>{% endif %}</i> <span>({{ description }})</span></label><input id="{{ key }}" name="{{ key }}" value="{{ values[key] }}" inputmode="decimal" required aria-describedby="{{ key }}-error" aria-invalid="{{ 'true' if errors.get(key) else 'false' }}">{% if key == 'beta' %}<span class="unit">–</span>{% else %}<select class="unit" name="{{ key }}_unit" aria-label="{{ symbol }}{{ sub }} unit" data-field="{{ key }}" data-previous="{{ units[key] }}">{% set options = [('V','V'),('mV','mV')] if key in ('vcc','vbe') else [('ohm','Ω'),('kohm','kΩ'),('Mohm','MΩ')] %}{% if units[key] not in options|map(attribute=0)|list %}<option value="" selected>Choose</option>{% endif %}{% for option, display in options %}<option value="{{ option }}" {% if units[key] == option %}selected{% endif %}>{{ display }}</option>{% endfor %}</select>{% endif %}<span id="{{ key }}-error" class="field-error" aria-live="polite">{{ errors.get(key, '') }}</span></div>
+        {% endfor %}
+        <button type="submit"><svg class="button-icon" viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="2" width="22" height="28" rx="3"/><path d="M9 7h14v6H9zM10 18h1m5 0h1m5 0h1m-13 5h1m5 0h1m5 0h1"/></svg> Calculate DC Bias</button>
+      </form>
+      {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+    </section>
+    <section class="card circuit-card">
+      <h2><svg class="icon network" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="5" r="3"/><circle cx="5" cy="25" r="3"/><circle cx="27" cy="25" r="3"/><path d="M16 8v9M8 23l8-6 8 6"/></svg> Circuit: Common-Emitter Amplifier</h2>
+      <svg class="circuit" viewBox="0 0 500 470" role="img" aria-label="NPN voltage-divider bias circuit">
+        <g fill="none" stroke="#111" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+          <path d="M320 48v25H145v49 M145 188v72 M145 260v57 M145 383v35 M320 73v49 M320 188v40 M320 308v9 M320 383v35 M145 260h118"/>
+          <path d="M145 122l-10 8 20 8-20 8 20 8-20 8 20 8-10 9v9 M145 317l-10 8 20 8-20 8 20 8-20 8 20 8-10 9v9 M320 122l-10 8 20 8-20 8 20 8-20 8 20 8-10 9v9 M320 317l-10 8 20 8-20 8 20 8-20 8 20 8-10 9v9"/>
+          <circle cx="300" cy="260" r="40" fill="#dbf0fd"/><path d="M263 260h23 M286 237v46 M286 247l34-19 M286 273l34 22 M320 295v13 M128 418h34 M134 425h22 M140 432h10 M303 418h34 M309 425h22 M315 432h10"/>
+        </g>
+        <path d="M305 277l12 15-19-5z" fill="#111"/><circle cx="145" cy="260" r="5"/><circle cx="320" cy="48" r="7"/>
+        {% set unit_labels = {'V':'V', 'mV':'mV', 'ohm':'Ω', 'kohm':'kΩ', 'Mohm':'MΩ'} %}
+        <g class="circuit-text" fill="#111"><text x="302" y="33"><tspan font-style="italic">V<tspan baseline-shift="sub" font-size="16">CC</tspan></tspan> = <tspan data-circuit="vcc">{{ values.vcc }}</tspan> <tspan data-circuit-unit="vcc">{{ unit_labels.get(units.vcc, '?') }}</tspan></text>
+          <text x="110" y="145" text-anchor="end" font-style="italic">R₁</text><text x="125" y="172" text-anchor="end"><tspan data-circuit="r1">{{ values.r1 }}</tspan> <tspan data-circuit-unit="r1">{{ unit_labels.get(units.r1, '?') }}</tspan></text>
+          <text x="110" y="337" text-anchor="end" font-style="italic">R₂</text><text x="125" y="364" text-anchor="end"><tspan data-circuit="r2">{{ values.r2 }}</tspan> <tspan data-circuit-unit="r2">{{ unit_labels.get(units.r2, '?') }}</tspan></text>
+          <text x="355" y="145" font-style="italic">R<tspan baseline-shift="sub" font-size="16">C</tspan></text><text x="345" y="172"><tspan data-circuit="rc">{{ values.rc }}</tspan> <tspan data-circuit-unit="rc">{{ unit_labels.get(units.rc, '?') }}</tspan></text>
+          <text x="355" y="337" font-style="italic">R<tspan baseline-shift="sub" font-size="16">E</tspan></text><text x="345" y="364"><tspan data-circuit="re">{{ values.re }}</tspan> <tspan data-circuit-unit="re">{{ unit_labels.get(units.re, '?') }}</tspan></text>
+          <text x="365" y="244" font-style="italic">Q₁</text><text x="365" y="270">NPN</text><text x="365" y="296">(β = <tspan data-circuit="beta">{{ values.beta }}</tspan>)</text>
+        </g>
+      </svg>
+    </section>
+    <div class="results-column">
+      <section class="card results-card"><h2><svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 28h26M5 27v-9h5v9M13 27V11h5v16M21 27V4h5v23"/></svg> DC Bias Results</h2>
+        <table><tbody>{% for key, symbol, sub, scale, unit in [('vb','V','B',1,'V'),('ve','V','E',1,'V'),('vc','V','C',1,'V'),('vce','V','CE',1,'V'),('ib','I','B',1000,'mA'),('ic','I','C',1000,'mA'),('ie','I','E',1000,'mA')] %}
+          <tr><th><i>{{ symbol }}<sub>{{ sub }}</sub></i></th><td>{% if result %}{{ '%.4f'|format(result[key] * scale) }} {{ unit }}{% else %}—{% endif %}</td></tr>
+        {% endfor %}</tbody></table>
+      </section>
+      <section class="status {% if result and not result.warnings %}status-ok{% elif result and result.warnings or error %}status-warning{% else %}status-pending{% endif %}" id="result-status" aria-live="polite">
+        {% if result and not result.warnings %}<strong><span class="status-icon">✓</span> Active region approximation OK</strong><p><i>V<sub>CE</sub></i> = {{ '%.4f'|format(result.vce) }} V &gt; 0.2 V (approximate threshold)</p>
+        {% elif result and result.warnings %}<strong>⚠ Operating region warning</strong>{% for warning in result.warnings %}<p>{{ warning }}</p>{% endfor %}
+        {% elif error %}<strong>⚠ Check input parameters</strong><p>Correct the values and calculate again.</p>
+        {% else %}<strong>Operating region</strong><p>Calculate DC bias to see the operating-region assessment.</p>{% endif %}
+      </section>
+    </div>
+  </div>
+  <aside class="goal"><strong><span>◎</span> Week 2 Goal</strong><p><b>Rough target for this lab:</b> Build a Flask web app that takes the circuit parameters, computes the BJT DC bias (<i>V<sub>B</sub>, V<sub>E</sub>, V<sub>C</sub>, V<sub>CE</sub>, I<sub>B</sub>, I<sub>C</sub>, I<sub>E</sub></i>) for a common-emitter amplifier with voltage-divider bias, and displays the results.</p></aside>
+</main>
+<script>
+  const form = document.getElementById('bias-form');
+  const factors = {V: 1, mV: 0.001, ohm: 1, kohm: 1000, Mohm: 1000000};
+  const minNormal = 2.2250738585072014e-308;
+  function showError(input, message) {
+    input.setAttribute('aria-invalid', message ? 'true' : 'false');
+    document.getElementById(input.id + '-error').textContent = message;
+    return !message;
+  }
+  function validateField(input) {
+    const text = input.value.trim();
+    const select = form.querySelector('select[data-field="' + input.id + '"]');
+    const number = Number(text);
+    let message = '';
+    if (!text) message = 'This field is required.';
+    else if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(text) || !Number.isFinite(number)) message = 'Enter a finite number.';
+    else if (number === 0 && /[1-9]/.test(text.split(/[eE]/)[0])) message = 'Value is too small for reliable calculation.';
+    else if (input.id === 'vbe' ? number < 0 : number <= 0) message = input.id === 'vbe' ? 'Enter zero or greater.' : 'Enter a value greater than zero.';
+    else if (select && !(select.value in factors)) message = 'Choose a valid unit.';
+    else {
+      const converted = number * (select ? factors[select.value] : 1);
+      if (!Number.isFinite(converted)) message = 'Value is too large after unit conversion.';
+      else if ((number !== 0 && converted === 0) || (number !== 0 && Math.abs(number) < minNormal) || (converted !== 0 && Math.abs(converted) < minNormal)) message = 'Value is too small for reliable calculation.';
+    }
+    return showError(input, message);
+  }
+  form.querySelectorAll('input').forEach((input) => {
+    input.addEventListener('blur', () => validateField(input));
+    input.addEventListener('input', () => { if (input.getAttribute('aria-invalid') === 'true') validateField(input); });
+  });
+  form.addEventListener('submit', (event) => {
+    const invalid = Array.from(form.querySelectorAll('input')).filter(input => !validateField(input));
+    if (invalid.length) { event.preventDefault(); invalid[0].focus(); }
+  });
+  form.querySelectorAll('select[data-field]').forEach((select) => {
+    select.addEventListener('change', () => {
+      const input = document.getElementById(select.dataset.field);
+      if (input.value.trim() && Number.isFinite(Number(input.value)) && factors[select.dataset.previous] !== undefined) {
+        const converted = Number(input.value) * (factors[select.dataset.previous] / factors[select.value]);
+        if (!Number.isFinite(converted) || (converted === 0 && Number(input.value) !== 0) || (converted !== 0 && Math.abs(converted) < minNormal)) {
+          select.value = select.dataset.previous;
+          showError(input, 'This value cannot be represented in the selected unit.');
+          return;
+        }
+        input.setCustomValidity('');
+        input.value = String(Number(converted.toPrecision(15)));
+      }
+      select.dataset.previous = select.value;
+      const label = document.querySelector('[data-circuit="' + input.name + '"]');
+      const unitLabel = document.querySelector('[data-circuit-unit="' + input.name + '"]');
+      if (label) label.textContent = input.value || '—';
+      if (unitLabel) unitLabel.textContent = select.options[select.selectedIndex].text;
+      validateField(input);
+    });
+  });
+  form.addEventListener('input', (event) => {
+    if (event.target.tagName === 'INPUT') event.target.setCustomValidity('');
+    const label = document.querySelector('[data-circuit="' + event.target.name + '"]');
+    if (label) label.textContent = event.target.value || '—';
+    const status = document.getElementById('result-status');
+    if (status && !status.dataset.stale) {
+      status.dataset.stale = 'true';
+      status.className = 'status status-pending';
+      status.textContent = 'Inputs changed. Calculate again to update results and operating region.';
+    }
+  });
+</script>
+</body></html>

@@ -1,0 +1,29 @@
+test_below_cutoff_warns (test_dc_bias.BiasTests.test_below_cutoff_warns) ... ok
+test_cutoff_boundary (test_dc_bias.BiasTests.test_cutoff_boundary) ... ok
+test_extreme_finite_inputs_are_rejected (test_dc_bias.BiasTests.test_extreme_finite_inputs_are_rejected) ... ok
+test_intermediate_product_underflow_is_rejected (test_dc_bias.BiasTests.test_intermediate_product_underflow_is_rejected) ... ok
+test_invalid (test_dc_bias.BiasTests.test_invalid) ... ok
+test_reference (test_dc_bias.BiasTests.test_reference) ... ok
+test_saturation_boundary_and_below (test_dc_bias.BiasTests.test_saturation_boundary_and_below) ... ok
+test_subnormal_input_is_rejected (test_dc_bias.BiasTests.test_subnormal_input_is_rejected) ... ok
+test_zero_vbe_is_allowed (test_dc_bias.BiasTests.test_zero_vbe_is_allowed) ... ok
+test_equivalent_units_calculate_same_result (test_web.WebTests.test_equivalent_units_calculate_same_result) ... ok
+test_extreme_finite_input_shows_error (test_web.WebTests.test_extreme_finite_input_shows_error) ... ok
+test_get_form (test_web.WebTests.test_get_form) ... ok
+test_intermediate_underflow_shows_error (test_web.WebTests.test_intermediate_underflow_shows_error) ... ok
+test_invalid_inputs (test_web.WebTests.test_invalid_inputs) ... ok
+test_multiple_field_errors_are_specific (test_web.WebTests.test_multiple_field_errors_are_specific) ... ok
+test_sample_and_changed_input (test_web.WebTests.test_sample_and_changed_input) ... ok
+test_status_depends_on_actual_result (test_web.WebTests.test_status_depends_on_actual_result) ... ok
+test_text_underflow_shows_error (test_web.WebTests.test_text_underflow_shows_error) ... ok
+test_unit_conversion_underflow_shows_error (test_web.WebTests.test_unit_conversion_underflow_shows_error) ... ok
+test_unit_error_is_attached_to_its_field (test_web.WebTests.test_unit_error_is_attached_to_its_field) ... ok
+test_unknown_units_are_rejected (test_web.WebTests.test_unknown_units_are_rejected) ... ok
+test_valid_fields_have_accessible_error_targets (test_web.WebTests.test_valid_fields_have_accessible_error_targets) ... ok
+test_visual_structure_and_live_labels (test_web.WebTests.test_visual_structure_and_live_labels) ... ok
+test_warnings (test_web.WebTests.test_warnings) ... ok
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.032s
+
+OK
